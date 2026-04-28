@@ -7,6 +7,8 @@ import secrets
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.core.config import settings
+from app.core.firebase import firebase_auth
 from app.services.store import store
 
 security = HTTPBearer(auto_error=False)
@@ -30,8 +32,11 @@ def verify_password(password: str, stored_password: str | None) -> bool:
         _, salt, expected = stored_password.split("$", 2)
         actual = hash_password(password, salt).split("$", 2)[2]
         return hmac.compare_digest(actual, expected)
-    # Backward-compatible demo mode for existing local JSON users.
     return hmac.compare_digest(password, stored_password)
+
+
+def public_user(user: dict) -> dict:
+    return {key: value for key, value in user.items() if key not in {"password", "passwordHash"}}
 
 
 def make_token(uid: str, role: str) -> str:
@@ -42,7 +47,7 @@ def make_token(uid: str, role: str) -> str:
     return f"demo-user-{uid}"
 
 
-def user_from_token(token: str) -> dict | None:
+def local_user_from_token(token: str) -> dict | None:
     uid = STATIC_TOKENS.get(token)
     if token.startswith("demo-user-"):
         uid = token.replace("demo-user-", "", 1)
@@ -51,8 +56,39 @@ def user_from_token(token: str) -> dict | None:
 
     for user in store.all("users"):
         if user.get("uid") == uid:
-            return {key: value for key, value in user.items() if key not in {"password", "passwordHash"}}
+            return public_user(user)
     return None
+
+
+def firebase_user_from_token(token: str) -> dict | None:
+    if not settings.USE_FIREBASE or not firebase_auth:
+        return None
+
+    try:
+        decoded = firebase_auth.verify_id_token(token)
+        uid = decoded["uid"]
+        user = store.one("users", uid, id_key="uid")
+        if user:
+            return public_user(user)
+
+        # Fallback profile if Firebase Auth user exists but Firestore profile was not created yet.
+        return {
+            "uid": uid,
+            "email": decoded.get("email", ""),
+            "displayName": decoded.get("name") or decoded.get("email", "User"),
+            "role": "customer",
+            "addresses": [],
+            "createdAt": "",
+        }
+    except Exception:
+        return None
+
+
+def user_from_token(token: str) -> dict | None:
+    firebase_user = firebase_user_from_token(token)
+    if firebase_user:
+        return firebase_user
+    return local_user_from_token(token)
 
 
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> dict:
@@ -60,7 +96,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
     user = user_from_token(credentials.credentials)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid demo token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
 
 

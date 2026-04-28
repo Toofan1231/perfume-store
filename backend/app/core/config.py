@@ -9,6 +9,12 @@ class Settings(BaseSettings):
     LOCAL_STORE_PATH: str = "data/store.json"
     RATE_LIMIT_PER_MINUTE: int = 120
 
+    USE_FIREBASE: bool = False
+    FIREBASE_PROJECT_ID: str | None = None
+    FIREBASE_STORAGE_BUCKET: str | None = None
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = None
+    FIREBASE_SERVICE_ACCOUNT_JSON: str | None = None
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property

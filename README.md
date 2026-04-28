@@ -111,3 +111,79 @@ After this version is approved, connect the database:
 - Firestore
 - Firebase Storage
 - Admin role via Firebase custom claims or users collection
+
+
+## Firebase Auth + Firestore mode
+
+This version supports two modes:
+
+1. Local/demo mode with localStorage and backend JSON.
+2. Firebase mode with Firebase Auth and Firestore.
+
+### Frontend Firebase setup
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+NEXT_PUBLIC_USE_FIREBASE=true
+NEXT_PUBLIC_USE_FIREBASE_STORAGE=false
+
+NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
+NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=YOUR_MEASUREMENT_ID
+```
+
+Then run:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Firestore rules
+
+Use the latest rules from:
+
+```txt
+firebase-ready/firestore.rules
+```
+
+The rules allow:
+- Public read for products, categories, reviews, and settings.
+- Admin write access for products, categories, settings, orders, users, and review moderation.
+- Customer create/read access for their own orders.
+- Customer profile updates without allowing customers to promote themselves to admin.
+
+### Backend Firebase mode
+
+The backend is still able to run in local JSON mode. To enable Firebase Admin SDK mode later:
+
+```bash
+cd backend
+pip install -r requirements.txt
+pip install -r requirements-firebase-later.txt
+```
+
+Create `backend/.env`:
+
+```env
+USE_FIREBASE=true
+FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.firebasestorage.app
+GOOGLE_APPLICATION_CREDENTIALS=path/to/serviceAccountKey.json
+```
+
+Then run:
+
+```bash
+python -m uvicorn app.main:app --reload
+```
+
+Do not commit service account files or `.env` files to GitHub.

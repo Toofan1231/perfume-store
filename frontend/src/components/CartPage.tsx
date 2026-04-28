@@ -19,6 +19,7 @@ export function CartPage() {
     t,
     text,
     currentUser,
+    isFirebaseEnabled
   } = useApp();
 
   const savedAddresses = currentUser?.addresses || [];
@@ -28,10 +29,11 @@ export function CartPage() {
     phone: savedAddresses[0]?.phone || "",
     city: savedAddresses[0]?.city || "",
     address: savedAddresses[0]?.address || "",
-    paymentMethod: "cash" as "cash" | "card" | "manual",
+    paymentMethod: "cash" as "cash" | "card" | "manual"
   });
 
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
 
   const lines = cart
     .map((item) => {
@@ -40,16 +42,16 @@ export function CartPage() {
       return product && size ? { ...item, product, size } : null;
     })
     .filter(Boolean) as Array<{
-    productId: string;
-    sizeLabel: string;
-    quantity: number;
-    product: NonNullable<ReturnType<typeof getProduct>>;
-    size: { label: string; price: number; stock: number };
-  }>;
+      productId: string;
+      sizeLabel: string;
+      quantity: number;
+      product: NonNullable<ReturnType<typeof getProduct>>;
+      size: { label: string; price: number; stock: number };
+    }>;
 
   const subtotal = useMemo(
     () => lines.reduce((sum, line) => sum + line.size.price * line.quantity, 0),
-    [lines],
+    [lines]
   );
 
   const hasCartItems = lines.length > 0;
@@ -62,34 +64,47 @@ export function CartPage() {
       fullName: address.fullName,
       phone: address.phone,
       city: address.city,
-      address: address.address,
+      address: address.address
     }));
   };
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
+    setMessage("");
 
-    if (!hasCartItems) return;
+    try {
+      if (!hasCartItems) return;
 
-    const order = placeOrder({
-      shippingAddress: {
-        fullName: form.fullName.trim(),
-        phone: form.phone.trim(),
-        city: form.city.trim(),
-        address: form.address.trim(),
-      },
-      paymentMethod: form.paymentMethod,
-    });
+      if (isFirebaseEnabled && !currentUser) {
+        setMessageType("error");
+        setMessage("Please login before checkout when Firebase is enabled.");
+        return;
+      }
 
-    setMessage(`Order ${order.id.slice(0, 8)} created successfully.`);
+      const order = placeOrder({
+        shippingAddress: {
+          fullName: form.fullName.trim(),
+          phone: form.phone.trim(),
+          city: form.city.trim(),
+          address: form.address.trim()
+        },
+        paymentMethod: form.paymentMethod
+      });
 
-    setForm({
-      fullName: currentUser?.displayName || "",
-      phone: "",
-      city: "",
-      address: "",
-      paymentMethod: "cash",
-    });
+      setMessageType("success");
+      setMessage(`Order ${order.id.slice(0, 8)} created successfully.`);
+
+      setForm({
+        fullName: currentUser?.displayName || "",
+        phone: "",
+        city: "",
+        address: "",
+        paymentMethod: "cash"
+      });
+    } catch (error) {
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "Checkout failed.");
+    }
   };
 
   return (
@@ -120,10 +135,7 @@ export function CartPage() {
                     className="grid gap-4 rounded-3xl border p-4 md:grid-cols-[120px_1fr_auto]"
                   >
                     <div className="h-28 overflow-hidden rounded-2xl">
-                      <ProductImage
-                        src={line.product.images[0]}
-                        alt={text(line.product.name)}
-                      />
+                      <ProductImage src={line.product.images[0]} alt={text(line.product.name)} />
                     </div>
 
                     <div>
@@ -131,13 +143,10 @@ export function CartPage() {
                         {line.product.brand}
                       </p>
 
-                      <h2 className="text-2xl font-black">
-                        {text(line.product.name)}
-                      </h2>
+                      <h2 className="text-2xl font-black">{text(line.product.name)}</h2>
 
                       <p className="mt-2 text-sm text-stone-500">
-                        {line.size.label} · {money(line.size.price)} ·{" "}
-                        {line.size.stock} {t("stock")}
+                        {line.size.label} · {money(line.size.price)} · {line.size.stock} {t("stock")}
                       </p>
 
                       {isMaxQuantity ? (
@@ -155,7 +164,7 @@ export function CartPage() {
                             updateCartQuantity(
                               line.productId,
                               line.sizeLabel,
-                              Math.max(1, line.quantity - 1),
+                              Math.max(1, line.quantity - 1)
                             )
                           }
                           className="p-2"
@@ -164,9 +173,7 @@ export function CartPage() {
                           <Minus className="h-4 w-4" />
                         </button>
 
-                        <span className="min-w-10 text-center font-black">
-                          {line.quantity}
-                        </span>
+                        <span className="min-w-10 text-center font-black">{line.quantity}</span>
 
                         <button
                           type="button"
@@ -175,7 +182,7 @@ export function CartPage() {
                             updateCartQuantity(
                               line.productId,
                               line.sizeLabel,
-                              Math.min(line.size.stock, line.quantity + 1),
+                              Math.min(line.size.stock, line.quantity + 1)
                             )
                           }
                           className="p-2 disabled:cursor-not-allowed disabled:opacity-40"
@@ -187,9 +194,7 @@ export function CartPage() {
 
                       <button
                         type="button"
-                        onClick={() =>
-                          removeFromCart(line.productId, line.sizeLabel)
-                        }
+                        onClick={() => removeFromCart(line.productId, line.sizeLabel)}
                         className="rounded-full bg-red-50 p-3 text-red-600"
                         aria-label="Remove item"
                       >
@@ -224,11 +229,16 @@ export function CartPage() {
               </div>
             </div>
 
+            {isFirebaseEnabled && !currentUser ? (
+              <div className="mb-4 rounded-3xl bg-red-50 p-4 text-sm font-bold text-red-700">
+                Please login before checkout because Firebase orders require a signed-in customer.
+                <Link href="/login" className="mt-2 block underline">Go to login</Link>
+              </div>
+            ) : null}
+
             {savedAddresses.length ? (
               <div className="mb-4 rounded-3xl bg-amber-50 p-4">
-                <p className="mb-2 text-sm font-black text-stone-800">
-                  {t("savedAddresses")}
-                </p>
+                <p className="mb-2 text-sm font-black text-stone-800">{t("savedAddresses")}</p>
 
                 <div className="space-y-2">
                   {savedAddresses.map((address, index) => (
@@ -251,9 +261,7 @@ export function CartPage() {
                 className="input"
                 placeholder={t("fullName")}
                 value={form.fullName}
-                onChange={(event) =>
-                  setForm({ ...form, fullName: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, fullName: event.target.value })}
               />
 
               <input
@@ -261,9 +269,7 @@ export function CartPage() {
                 className="input"
                 placeholder={t("phone")}
                 value={form.phone}
-                onChange={(event) =>
-                  setForm({ ...form, phone: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, phone: event.target.value })}
               />
 
               <input
@@ -271,9 +277,7 @@ export function CartPage() {
                 className="input"
                 placeholder={t("city")}
                 value={form.city}
-                onChange={(event) =>
-                  setForm({ ...form, city: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, city: event.target.value })}
               />
 
               <textarea
@@ -281,9 +285,7 @@ export function CartPage() {
                 className="input min-h-28"
                 placeholder={t("address")}
                 value={form.address}
-                onChange={(event) =>
-                  setForm({ ...form, address: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, address: event.target.value })}
               />
 
               <select
@@ -292,10 +294,7 @@ export function CartPage() {
                 onChange={(event) =>
                   setForm({
                     ...form,
-                    paymentMethod: event.target.value as
-                      | "cash"
-                      | "card"
-                      | "manual",
+                    paymentMethod: event.target.value as "cash" | "card" | "manual"
                   })
                 }
               >
@@ -303,13 +302,22 @@ export function CartPage() {
                 <option value="card">{t("demoPayment")}</option>
               </select>
 
-              <button className="w-full rounded-full bg-stone-950 px-6 py-4 font-black text-white">
+              <button
+                disabled={isFirebaseEnabled && !currentUser}
+                className="w-full rounded-full bg-stone-950 px-6 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+              >
                 {t("placeOrder")}
               </button>
             </form>
 
             {message ? (
-              <p className="mt-4 rounded-2xl bg-emerald-50 p-4 text-sm font-bold text-emerald-700">
+              <p
+                className={`mt-4 rounded-2xl p-4 text-sm font-bold ${
+                  messageType === "success"
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-700"
+                }`}
+              >
                 {message}
               </p>
             ) : null}
