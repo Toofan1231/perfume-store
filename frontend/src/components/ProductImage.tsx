@@ -1,0 +1,1 @@
+export function ProductImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) { return <img src={src || "/images/perfume-oud.svg"} alt={alt} className={`h-full w-full object-cover ${className}`} loading="lazy" />; }

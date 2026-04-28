@@ -1,0 +1,38 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.routes import analytics, auth, categories, orders, payments, products, reviews, settings as settings_routes, users
+from app.core.config import settings
+from app.core.middleware import SecurityHeadersMiddleware, SimpleRateLimitMiddleware
+
+app = FastAPI(title=settings.APP_NAME, version="1.0.0")
+
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SimpleRateLimitMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(products.router)
+app.include_router(categories.router)
+app.include_router(reviews.router)
+app.include_router(orders.router)
+app.include_router(users.router)
+app.include_router(payments.router)
+app.include_router(settings_routes.router)
+app.include_router(analytics.router)
+
+
+@app.get("/")
+def root():
+    return {"name": settings.APP_NAME, "status": "running", "docs": "/docs"}
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}
