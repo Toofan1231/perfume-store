@@ -807,11 +807,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cart: []
     }));
 
-    if (useFirebase && db) {
-      void setDoc(doc(db, "settings", "shop"), sanitizeForFirestore(demoSettings)).catch(console.error);
-      demoCategories.forEach((category) => void setDoc(doc(db, "categories", category.id), sanitizeForFirestore(category)).catch(console.error));
-      demoProducts.forEach((product) => void setDoc(doc(db, "products", product.id), sanitizeForFirestore(product)).catch(console.error));
-      demoReviews.forEach((review) => void setDoc(doc(db, "reviews", review.id), sanitizeForFirestore(review)).catch(console.error));
+    const firestore = db;
+
+    if (useFirebase && firestore) {
+      void setDoc(doc(firestore, "settings", "shop"), sanitizeForFirestore(demoSettings)).catch(console.error);
+
+      demoCategories.forEach((category) => {
+        void setDoc(
+          doc(firestore, "categories", category.id),
+          sanitizeForFirestore(category)
+        ).catch(console.error);
+      });
+
+      demoProducts.forEach((product) => {
+        void setDoc(
+          doc(firestore, "products", product.id),
+          sanitizeForFirestore(product)
+        ).catch(console.error);
+      });
+
+      demoReviews.forEach((review) => {
+        void setDoc(
+          doc(firestore, "reviews", review.id),
+          sanitizeForFirestore(review)
+        ).catch(console.error);
+      });
     }
   };
 
