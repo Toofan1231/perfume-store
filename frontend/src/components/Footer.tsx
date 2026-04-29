@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
   Truck,
-  Twitter,
+  Twitter
 } from "lucide-react";
 import { useApp } from "@/lib/store";
 
@@ -18,13 +18,13 @@ export function Footer() {
   const { settings, t, text } = useApp();
 
   const shopName = text(settings.shopName) || "Luxora";
-
+  const brandTagline = text(settings.brandTagline) || "Perfume House";
   const footerText =
     text(settings.footerText) ||
     "Premium fragrance shopping experience with authentic perfumes, elegant packaging, and fast delivery.";
 
-  const contactPhone = text(settings.contactPhone) || "+93 700 000 000";
-  const contactEmail = text(settings.contactEmail) || "sales@luxora.dev";
+  const contactPhone = settings.contactPhone || "+93 700 000 000";
+  const contactEmail = settings.contactEmail || "sales@luxora.dev";
   const contactAddress = text(settings.contactAddress) || "Kabul, Afghanistan";
 
   const quickLinks = [
@@ -32,7 +32,7 @@ export function Footer() {
     { href: "/products", label: t("products") },
     { href: "/cart", label: t("cart") },
     { href: "/profile", label: t("profile") },
-    { href: "/admin", label: t("admin") },
+    { href: "/admin", label: t("admin") }
   ];
 
   return (
@@ -53,7 +53,7 @@ export function Footer() {
                   {shopName}
                 </span>
                 <span className="mt-1 block text-xs font-bold uppercase tracking-[0.35em] text-amber-300">
-                  Perfume House
+                  {brandTagline}
                 </span>
               </span>
             </Link>
@@ -95,7 +95,7 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.28em] text-amber-300">
-              Contact
+              {t("contact")}
             </h3>
 
             <div className="mt-5 space-y-4 text-sm text-stone-400">
@@ -122,8 +122,7 @@ export function Footer() {
             </h3>
 
             <p className="mt-5 text-sm leading-7 text-stone-400">
-              Follow our latest perfume collections, offers, gift sets, and
-              luxury fragrance updates.
+              Follow our latest perfume collections, offers, gift sets, and luxury fragrance updates.
             </p>
 
             <div className="mt-6 flex gap-3">
@@ -157,20 +156,13 @@ export function Footer() {
         <div className="mt-12 flex flex-col justify-between gap-4 border-t border-white/10 pt-6 text-sm text-stone-500 md:flex-row md:items-center">
           <p>
             © {new Date().getFullYear()}{" "}
-            <span className="font-bold text-stone-300">{shopName}</span>. All
-            rights reserved.
+            <span className="font-bold text-stone-300">{shopName}</span>. All rights reserved.
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <span className="transition hover:text-amber-200">
-              Privacy Policy
-            </span>
-            <span className="transition hover:text-amber-200">
-              Terms of Service
-            </span>
-            <span className="transition hover:text-amber-200">
-              Secure Checkout
-            </span>
+            <span className="transition hover:text-amber-200">Privacy Policy</span>
+            <span className="transition hover:text-amber-200">Terms of Service</span>
+            <span className="transition hover:text-amber-200">Secure Checkout</span>
           </div>
         </div>
       </div>

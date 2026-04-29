@@ -7,3 +7,6 @@
   NODE_VERSION = "20"
   NEXT_PUBLIC_USE_FIREBASE = "true"
   NEXT_PUBLIC_USE_FIREBASE_STORAGE = "false"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

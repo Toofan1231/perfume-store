@@ -1,28 +1,18 @@
-# Luxora Perfume Store — Pre-deployment audited version
+# Luxora Perfume Store — Netlify Ready
 
-This is the final pre-database version of the perfume store project.
+This is the prepared production-style MVP for the perfume store.
 
-It includes:
+## Included
 
-- Next.js frontend
-- FastAPI backend
-- Local JSON backend persistence
-- English, Dari, Pashto UI
-- RTL support
-- Customer login/register demo
-- Admin login demo
-- Customer profile and saved addresses
-- Order history
-- Product search and advanced filters
-- Product details and reviews
-- Cart and checkout
-- Demo payment flow
-- Admin dashboard
-- Admin control for homepage, SEO text, footer, contact info, products, categories, orders, reviews, users, and roles
-- Backend API with validation, pagination, auth, rate limiting, security headers, atomic JSON store, and tests
-- Firebase-ready rules for later database integration
+- Next.js frontend in `frontend/`
+- FastAPI backend in `backend/`
+- Firebase Auth + Firestore-ready frontend
+- Firebase Storage disabled for now
+- Netlify deployment configuration in `netlify.toml`
+- Firestore rules in `firebase-ready/firestore.rules`
+- Premium navbar, footer, cart UI, profile, admin, products, orders, and multilingual UI
 
-## Run frontend
+## Local frontend
 
 ```bash
 cd frontend
@@ -30,65 +20,7 @@ npm install
 npm run dev
 ```
 
-Open:
-
-```txt
-http://localhost:3000
-```
-
-## Run backend
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
-```
-
-API docs:
-
-```txt
-http://localhost:8000/docs
-```
-
-## Demo accounts
-
-Admin:
-
-```txt
-admin@luxora.dev
-admin12345
-```
-
-Customer:
-
-```txt
-customer@luxora.dev
-customer12345
-```
-
-Backend demo admin token:
-
-```txt
-demo-admin-token
-```
-
-Backend demo customer token:
-
-```txt
-demo-customer-token
-```
-
-## Before deployment
-
-Read:
-
-```txt
-PRE_DEPLOYMENT_AUDIT.md
-```
-
-Then run:
+## Local build test
 
 ```bash
 cd frontend
@@ -97,93 +29,31 @@ npm run typecheck
 npm run build
 ```
 
-```bash
-cd backend
-pip install -r requirements.txt
-python -m pytest
-```
+## Netlify settings
 
-## Next phase
+The root `netlify.toml` is already configured.
 
-After this version is approved, connect the database:
-
-- Firebase Auth
-- Firestore
-- Firebase Storage
-- Admin role via Firebase custom claims or users collection
-
-
-## Firebase Auth + Firestore mode
-
-This version supports two modes:
-
-1. Local/demo mode with localStorage and backend JSON.
-2. Firebase mode with Firebase Auth and Firestore.
-
-### Frontend Firebase setup
-
-Create `frontend/.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-NEXT_PUBLIC_USE_FIREBASE=true
-NEXT_PUBLIC_USE_FIREBASE_STORAGE=false
-
-NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_API_KEY
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
-NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=YOUR_MEASUREMENT_ID
-```
-
-Then run:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Firestore rules
-
-Use the latest rules from:
+If Netlify asks manually, use:
 
 ```txt
-firebase-ready/firestore.rules
+Base directory: frontend
+Build command: npm run build
+Publish directory: .next
 ```
 
-The rules allow:
-- Public read for products, categories, reviews, and settings.
-- Admin write access for products, categories, settings, orders, users, and review moderation.
-- Customer create/read access for their own orders.
-- Customer profile updates without allowing customers to promote themselves to admin.
+Do not use `frontend/.next` as publish directory when base directory is already `frontend`.
 
-### Backend Firebase mode
+## Firebase environment variables
 
-The backend is still able to run in local JSON mode. To enable Firebase Admin SDK mode later:
+Add the Firebase variables in Netlify → Site configuration → Environment variables.
 
-```bash
-cd backend
-pip install -r requirements.txt
-pip install -r requirements-firebase-later.txt
-```
-
-Create `backend/.env`:
+Storage remains disabled:
 
 ```env
-USE_FIREBASE=true
-FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.firebasestorage.app
-GOOGLE_APPLICATION_CREDENTIALS=path/to/serviceAccountKey.json
+NEXT_PUBLIC_USE_FIREBASE_STORAGE=false
 ```
 
-Then run:
+## Backend
 
-```bash
-python -m uvicorn app.main:app --reload
-```
-
-Do not commit service account files or `.env` files to GitHub.
+The backend can be deployed later to Render, Railway, or Google Cloud Run.
+The current Netlify deployment only needs the frontend + Firebase Auth + Firestore.

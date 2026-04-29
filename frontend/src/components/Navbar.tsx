@@ -19,6 +19,7 @@ export function Navbar() {
   const { t, text, cartCount, settings, currentUser, logout } = useApp();
 
   const shopName = text(settings.shopName) || "Luxora";
+  const brandTagline = text(settings.brandTagline) || "Perfume House";
 
   const links = useMemo<NavLink[]>(
     () => [
@@ -26,9 +27,9 @@ export function Navbar() {
       { href: "/products", label: t("products") },
       { href: "/cart", label: t("cart") },
       { href: "/profile", label: t("profile") },
-      { href: "/admin", label: t("admin") },
+      { href: "/admin", label: t("admin") }
     ],
-    [t],
+    [t]
   );
 
   const isActive = (href: string) => {
@@ -49,7 +50,7 @@ export function Navbar() {
               {shopName}
             </span>
             <span className="mt-1 block text-xs font-bold uppercase tracking-[0.35em] text-amber-800">
-              Perfume House
+              {brandTagline}
             </span>
           </span>
         </Link>
@@ -66,7 +67,7 @@ export function Navbar() {
                   "rounded-full px-4 py-2 text-sm font-bold transition",
                   active
                     ? "bg-amber-50 text-amber-900 ring-1 ring-amber-200"
-                    : "text-stone-800 hover:bg-stone-100 hover:text-amber-900",
+                    : "text-stone-800 hover:bg-stone-100 hover:text-amber-900"
                 ].join(" ")}
               >
                 {link.label}
@@ -136,7 +137,7 @@ export function Navbar() {
                     "rounded-2xl px-4 py-3 text-sm font-bold transition",
                     active
                       ? "bg-amber-50 text-amber-900 ring-1 ring-amber-200"
-                      : "text-stone-800 hover:bg-stone-100 hover:text-amber-900",
+                      : "text-stone-800 hover:bg-stone-100 hover:text-amber-900"
                   ].join(" ")}
                 >
                   {link.label}

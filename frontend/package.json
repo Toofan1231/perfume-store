@@ -23,6 +23,10 @@
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
     "tailwindcss": "4.2.4",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "@netlify/plugin-nextjs": "latest"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
